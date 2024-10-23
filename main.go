@@ -1,16 +1,38 @@
+/**
+ * @license
+ * Copyright Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// [START sheets_quickstart]
 package main
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
-	"net/http"
-	"os"
-
+	"github.com/hiennq12/my-money/struct_modal"
+	"github.com/hiennq12/my-money/util"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
 )
 
 // Retrieve a token, saves the token, then returns the generated client.
@@ -70,7 +92,7 @@ func saveToken(path string, token *oauth2.Token) {
 
 func main() {
 	ctx := context.Background()
-	b, err := os.ReadFile("credentials.json")
+	b, err := os.ReadFile("/Users/hiennguyen/Documents/learn/my-money/credentials.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
@@ -88,21 +110,76 @@ func main() {
 	}
 
 	// Prints the names and majors of students in a sample spreadsheet:
-	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-	spreadsheetId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-	readRange := "Class Data!A2:E"
+	// https://docs.google.com/spreadsheets/d/1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI/edit?gid=0#gid=0
+	spreadsheetId := "1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI"
+	readRange := "T10/2024!A1:Z40"
 	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
 	}
 
+	sum := float64(0)
 	if len(resp.Values) == 0 {
 		fmt.Println("No data found.")
 	} else {
-		fmt.Println("Name, Major:")
-		for _, row := range resp.Values {
-			// Print columns A and E, which correspond to indices 0 and 4.
-			fmt.Printf("%s, %s\n", row[0], row[4])
+		for rowIndex, row := range resp.Values {
+			if len(row) < 1 {
+				continue
+			}
+			//if rowIndex == 4 {
+			sum += handleRowData(row, rowIndex)
+			//for _, cell := range row {
+			//	fmt.Printf("type: %v ,value: %v\n", reflect.TypeOf(cell), cell)
+			//}
+			//break
+			//}
+
 		}
 	}
+
+	fmt.Println("+++++++SO TiEM DA TIEU: ", sum)
 }
+
+func handleRowData(row []interface{}, rowIndex int) float64 {
+	firstCell := true
+	// get current month and year
+	totalMoney := float64(0)
+	for columnIndex, cell := range row {
+		dataCell := cell.(string)
+		addrCell := fmt.Sprintf("%v%v", util.MapColumn[columnIndex], rowIndex+1)
+		if len(dataCell) > 0 {
+			if firstCell && len(dataCell) > 0 {
+				util.GetDateFromFirstCell(dataCell)
+				firstCell = false
+				continue
+			}
+			spendMoney, err := handleCellData(dataCell, addrCell)
+			if err != nil {
+				log.Panic(fmt.Sprintf("Error when parse data in cell[%v]. Detail err: [%v]", addrCell, err.Error()))
+			}
+
+			totalMoney += spendMoney.Money
+		}
+	}
+
+	return totalMoney
+}
+
+func handleCellData(cell string, addrCell string) (*struct_modal.SpendMoney, error) {
+	allData := strings.Split(cell, " ")
+	if len(allData) < 1 {
+		return nil, errors.New(fmt.Sprintf("The data in the cell has format errors (in %v)", addrCell))
+	}
+
+	money, err := strconv.ParseFloat(allData[0], 64)
+	if err != nil {
+		log.Panicf("Error when parse money in [%v]. Detail: %v", addrCell, err.Error())
+		return nil, err
+	}
+	return &struct_modal.SpendMoney{
+		Money: money / 1000,
+		Note:  strings.Join(allData[1:], " "),
+	}, nil
+}
+
+// [END sheets_quickstart]

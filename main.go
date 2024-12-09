@@ -20,10 +20,10 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/hiennq12/my-money/caculator_data"
+	"github.com/hiennq12/my-money/noti"
 	"github.com/hiennq12/my-money/struct_modal"
-	"github.com/hiennq12/my-money/util"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -31,8 +31,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
 )
 
 // Retrieve a token, saves the token, then returns the generated client.
@@ -112,74 +110,28 @@ func main() {
 	// Prints the names and majors of students in a sample spreadsheet:
 	// https://docs.google.com/spreadsheets/d/1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI/edit?gid=0#gid=0
 	spreadsheetId := "1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI"
-	readRange := "T10/2024!A1:Z40"
+	readRange := "T12/2024!A1:Z40"
 	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
 	}
 
-	sum := float64(0)
-	if len(resp.Values) == 0 {
-		fmt.Println("No data found.")
-	} else {
-		for rowIndex, row := range resp.Values {
-			if len(row) < 1 {
-				continue
-			}
-			//if rowIndex == 4 {
-			sum += handleRowData(row, rowIndex)
-			//for _, cell := range row {
-			//	fmt.Printf("type: %v ,value: %v\n", reflect.TypeOf(cell), cell)
-			//}
-			//break
-			//}
+	moneyInDay, err := caculator_data.MoneySpendInDay(&struct_modal.DataRows{
+		ValueRange: resp,
+	})
 
-		}
-	}
-
-	fmt.Println("+++++++SO TiEM DA TIEU: ", sum)
-}
-
-func handleRowData(row []interface{}, rowIndex int) float64 {
-	firstCell := true
-	// get current month and year
-	totalMoney := float64(0)
-	for columnIndex, cell := range row {
-		dataCell := cell.(string)
-		addrCell := fmt.Sprintf("%v%v", util.MapColumn[columnIndex], rowIndex+1)
-		if len(dataCell) > 0 {
-			if firstCell && len(dataCell) > 0 {
-				util.GetDateFromFirstCell(dataCell)
-				firstCell = false
-				continue
-			}
-			spendMoney, err := handleCellData(dataCell, addrCell)
-			if err != nil {
-				log.Panic(fmt.Sprintf("Error when parse data in cell[%v]. Detail err: [%v]", addrCell, err.Error()))
-			}
-
-			totalMoney += spendMoney.Money
-		}
-	}
-
-	return totalMoney
-}
-
-func handleCellData(cell string, addrCell string) (*struct_modal.SpendMoney, error) {
-	allData := strings.Split(cell, " ")
-	if len(allData) < 1 {
-		return nil, errors.New(fmt.Sprintf("The data in the cell has format errors (in %v)", addrCell))
-	}
-
-	money, err := strconv.ParseFloat(allData[0], 64)
 	if err != nil {
-		log.Panicf("Error when parse money in [%v]. Detail: %v", addrCell, err.Error())
-		return nil, err
+		log.Fatalf("Error when calculator money spend in day: %v", err.Error())
 	}
-	return &struct_modal.SpendMoney{
-		Money: money / 1000,
-		Note:  strings.Join(allData[1:], " "),
-	}, nil
+
+	configTele, message := noti.PrepareData(moneyInDay)
+	err = noti.SendTelegramMessage(configTele, message)
+	if err != nil {
+		fmt.Printf("Error sending message: %v\n", err, configTele)
+		return
+	}
+
+	fmt.Println("Message sent successfully!", message)
 }
 
 // [END sheets_quickstart]

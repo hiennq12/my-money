@@ -23,6 +23,6 @@ func GetDateFromFirstCell(day string) time.Time {
 	}
 	dateStr = dateTime.Format("02/01/2006 15:04:05")
 
-	fmt.Println("Dasdauyduya: ", dateStr)
+	//fmt.Println("Dasdauyduya: ", dateStr)
 	return dateTime
 }

@@ -12,6 +12,8 @@ type DataRows struct {
 }
 
 type RowResponse struct {
-	TotalMoney float64            `json:"total_money"`
-	Reason     map[float64]string `json:"reason"`
+	//TotalMoney    float64 `json:"total_money"`
+	DailySpending   float64            `json:"daily_spending"`
+	MonthlySpending float64            `json:"monthly_spending"`
+	Reason          map[float64]string `json:"reason"`
 }

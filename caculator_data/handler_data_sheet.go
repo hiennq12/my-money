@@ -11,15 +11,16 @@ import (
 	"time"
 )
 
-func MoneySpendInDay(rowsValue *struct_modal.DataRows) (*struct_modal.RowResponse, error) {
+func MoneySpending(rowsValue *struct_modal.DataRows) (*struct_modal.RowResponse, error) {
 	if rowsValue == nil || rowsValue.ValueRange == nil {
 		return nil, errors.New("rows data is empty, check sheet")
 	}
 
 	resp := rowsValue.ValueRange
 	now := time.Now()
-	totalMoney := float64(0)
+	totalMoney, dailySpending, money := float64(0), float64(0), float64(0)
 	mapMoneyReason := make(map[float64]string)
+	mapData := make(map[float64]string)
 	if len(resp.Values) == 0 {
 		fmt.Println("No data found.")
 	} else {
@@ -34,16 +35,19 @@ func MoneySpendInDay(rowsValue *struct_modal.DataRows) (*struct_modal.RowRespons
 				return nil, err
 			}
 
-			if dayInRow != now.Day() {
-				continue
+			money, mapData = handleRowData(row, rowIndex)
+			totalMoney += money
+			if dayInRow == now.Day() {
+				dailySpending = money
+				mapMoneyReason = mapData
 			}
-			totalMoney, mapMoneyReason = handleRowData(row, rowIndex)
 		}
 	}
 
 	return &struct_modal.RowResponse{
-		TotalMoney: totalMoney,
-		Reason:     mapMoneyReason,
+		MonthlySpending: totalMoney,
+		DailySpending:   dailySpending,
+		Reason:          mapMoneyReason,
 	}, nil
 }
 

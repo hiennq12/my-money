@@ -1,20 +1,3 @@
-/**
- * @license
- * Copyright Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-// [START sheets_quickstart]
 package main
 
 import (
@@ -24,6 +7,7 @@ import (
 	"github.com/hiennq12/my-money/caculator_data"
 	"github.com/hiennq12/my-money/noti"
 	"github.com/hiennq12/my-money/struct_modal"
+	"github.com/robfig/cron/v3"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -31,6 +15,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 // Retrieve a token, saves the token, then returns the generated client.
@@ -89,6 +74,30 @@ func saveToken(path string, token *oauth2.Token) {
 }
 
 func main() {
+	//allProcess()
+
+	c := cron.New(
+	//cron.WithSeconds(), // Cho phép lập lịch theo giây thi bieu thuc cron co 6 dau *
+	)
+
+	// // */15 * * * * 15p 1 laanf,  @hourly
+	jobID, err := c.AddFunc("*/15 * * * *", allProcess)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Job ID: %v\n", jobID)
+
+	c.Start()
+
+	// Đợi một thời gian để xem kết quả
+	time.Sleep(time.Hour)
+
+	// Dừng cron an toàn
+	ctx := c.Stop()
+	<-ctx.Done()
+}
+
+func allProcess() {
 	ctx := context.Background()
 	b, err := os.ReadFile("/Users/hiennguyen/Documents/learn/my-money/credentials.json")
 	if err != nil {
@@ -116,7 +125,7 @@ func main() {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
 	}
 
-	moneyInDay, err := caculator_data.MoneySpendInDay(&struct_modal.DataRows{
+	moneySpending, err := caculator_data.MoneySpending(&struct_modal.DataRows{
 		ValueRange: resp,
 	})
 
@@ -124,14 +133,14 @@ func main() {
 		log.Fatalf("Error when calculator money spend in day: %v", err.Error())
 	}
 
-	configTele, message := noti.PrepareData(moneyInDay)
-	err = noti.SendTelegramMessage(configTele, message)
+	configTele, message := noti.PrepareData(moneySpending)
+	if configTele != nil {
+		err = noti.SendTelegramMessage(configTele, message)
+	}
 	if err != nil {
-		fmt.Printf("Error sending message: %v\n", err, configTele)
+		fmt.Printf("Error sending message: %v\n", err)
 		return
 	}
 
 	fmt.Println("Message sent successfully!", message)
 }
-
-// [END sheets_quickstart]

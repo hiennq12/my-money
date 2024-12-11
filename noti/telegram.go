@@ -45,7 +45,7 @@ func readFileConfig(teleConfig *TelegramConfig) {
 	teleConfig.ChatID = config.TelegramConfig.ChatID
 }
 
-func PrepareData(moneyInDay *struct_modal.RowResponse) (*TelegramConfig, string) {
+func PrepareData(moneySpending *struct_modal.RowResponse) (*TelegramConfig, string) {
 	// send message to tele
 	// Configure your Telegram bot
 	now := time.Now()
@@ -53,15 +53,16 @@ func PrepareData(moneyInDay *struct_modal.RowResponse) (*TelegramConfig, string)
 	configTele := &TelegramConfig{}
 	readFileConfig(configTele)
 	//configTele := TelegramConfig{
-	//	BotToken: "7817584153:AAEQgSGiOE1TyouM6veW1VF1ExBg8CD1Vcw", // Replace with your bot token
-	//	//ChatID:   "1022100822",                                     // Replace with your chat ID
-	//	ChatID: "-4748590452", // Replace with your chat ID
+	//	BotToken: "zzzzzzzzzzz", // Replace with your bot token
+	//	//ChatID:   "123456879",                                     // Replace with your chat ID
+	//	ChatID: "-123456789", // Replace with your chat ID
 	//}
 
 	countSpendMoney := 0
 	builder := strings.Builder{}
-	builder.WriteString(fmt.Sprintf("So tien da tieu trong ngay [%v] la [%vk] \n", nowString, moneyInDay.TotalMoney))
-	for k, v := range moneyInDay.Reason {
+	builder.WriteString(fmt.Sprintf("Thang nay da tieu [%vk] \n", moneySpending.MonthlySpending))
+	builder.WriteString(fmt.Sprintf("So tien da tieu trong ngay [%v] la [%vk] \n", nowString, moneySpending.DailySpending))
+	for k, v := range moneySpending.Reason {
 		countSpendMoney++
 		builder.WriteString(fmt.Sprintf("[%v] %vk : %v \n", countSpendMoney, k, v))
 	}

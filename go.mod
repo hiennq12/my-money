@@ -3,6 +3,7 @@ module github.com/hiennq12/my-money
 go 1.23.2
 
 require (
+	github.com/robfig/cron/v3 v3.0.1
 	golang.org/x/oauth2 v0.23.0
 	google.golang.org/api v0.200.0
 	gopkg.in/yaml.v3 v3.0.1

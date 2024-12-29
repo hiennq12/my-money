@@ -53,7 +53,7 @@ func PrepareData(moneySpending *struct_modal.RowResponse) (*TelegramConfig, stri
 	configTele := &TelegramConfig{}
 	readFileConfig(configTele)
 	//configTele := TelegramConfig{
-	//	BotToken: "zzzzzzzzzzz", // Replace with your bot token
+	//	BotToken: "bot-token", // Replace with your bot token
 	//	//ChatID:   "123456879",                                     // Replace with your chat ID
 	//	ChatID: "-123456789", // Replace with your chat ID
 	//}

@@ -15,7 +15,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 )
 
 // Retrieve a token, saves the token, then returns the generated client.
@@ -76,23 +75,23 @@ func saveToken(path string, token *oauth2.Token) {
 func main() {
 	//allProcess()
 	// test
-	str := "40000 ăn trưa (1123)"
-	re := regexp.MustCompile(`\(([^)]+)\)`)
-	matches := re.FindStringSubmatch(str)
-
-	if len(matches) > 1 {
-		value := matches[1]
-		fmt.Println("Giá trị trong ngoặc đơn:", value)
-	} else {
-		fmt.Println("Không tìm thấy giá trị trong ngoặc đơn")
-	}
+	//str := "40000 ăn trưa (1123)"
+	//re := regexp.MustCompile(`\(([^)]+)\)`)
+	//matches := re.FindStringSubmatch(str)
+	//
+	//if len(matches) > 1 {
+	//	value := matches[1]
+	//	fmt.Println("Giá trị trong ngoặc đơn:", value)
+	//} else {
+	//	fmt.Println("Không tìm thấy giá trị trong ngoặc đơn")
+	//}
 
 	c := cron.New(
 	//cron.WithSeconds(), // Cho phép lập lịch theo giây thi bieu thuc cron co 6 dau *
 	)
 
 	// // */15 * * * * 15p 1 laanf,  @hourly
-	jobID, err := c.AddFunc("* */4 * * *", allProcess)
+	jobID, err := c.AddFunc("00 */2 * * *", allProcess)
 	if err != nil {
 		log.Fatal(err)
 	}

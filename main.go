@@ -99,7 +99,9 @@ func main() {
 	fmt.Printf("Job ID: %v\n", jobID)
 
 	c.Start()
-
+	// Giữ chương trình chạy mà không cần dùng time.Sleep
+	// Sử dụng channel để đợi và chặn chương trình chạy
+	select {}
 	// Đợi một thời gian để xem kết quả
 	//time.Sleep(time.Hour)
 

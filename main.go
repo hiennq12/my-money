@@ -114,7 +114,7 @@ func main() {
 
 func allProcess() {
 	ctx := context.Background()
-	b, err := os.ReadFile("/Users/hiennguyen/Documents/learn/my-money/credentials.json")
+	b, err := os.ReadFile("./credentials.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}

@@ -107,6 +107,8 @@ func main() {
 	// Dừng cron
 	//ctx := c.Stop()
 	//<-ctx.Done()
+
+	// test merge git
 }
 
 func allProcess() {

@@ -91,7 +91,7 @@ func main() {
 	)
 
 	// // */15 * * * * 15p 1 laanf,  @hourly
-	jobID, err := c.AddFunc("*/30 * * * *", allProcess)
+	jobID, err := c.AddFunc("*/5 * * * *", allProcess)
 	if err != nil {
 		log.Fatal(err)
 	}

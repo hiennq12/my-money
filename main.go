@@ -114,6 +114,7 @@ func main() {
 
 func allProcess() {
 	ctx := context.Background()
+	// /root/project/my-money/credentials.json
 	b, err := os.ReadFile("./credentials.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
@@ -134,7 +135,7 @@ func allProcess() {
 	// Prints the names and majors of students in a sample spreadsheet:
 	// https://docs.google.com/spreadsheets/d/1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI/edit?gid=0#gid=0
 	spreadsheetId := "1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI"
-	readRange := "T12/2024!A3:Z40"
+	readRange := "T01/2025!A3:Z40"
 	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)

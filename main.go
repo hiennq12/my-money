@@ -9,7 +9,6 @@ import (
 	"github.com/hiennq12/my-money/struct_modal"
 	"github.com/robfig/cron/v3"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 	"log"
@@ -113,27 +112,68 @@ func main() {
 }
 
 func allProcess() {
+	//ctx := context.Background()
+	//// /root/project/my-money/credentials.json
+	//b, err := os.ReadFile("./credentials.json")
+	//if err != nil {
+	//	log.Fatalf("Unable to read client secret file: %v", err)
+	//}
+	//
+	//// If modifying these scopes, delete your previously saved token.json.
+	//config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets.readonly")
+	//if err != nil {
+	//	log.Fatalf("Unable to parse client secret file to config: %v", err)
+	//}
+	//client := getClient(config)
+	//
+	//srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+	//if err != nil {
+	//	log.Fatalf("Unable to retrieve Sheets client: %v", err)
+	//}
+	//
+	//// Prints the names and majors of students in a sample spreadsheet:
+	//// https://docs.google.com/spreadsheets/d/1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI/edit?gid=0#gid=0
+	//spreadsheetId := "1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI"
+	//readRange := "T01/2025!A3:Z40"
+	//resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
+	//if err != nil {
+	//	log.Fatalf("Unable to retrieve data from sheet: %v", err)
+	//}
+	//
+	//moneySpending, err := caculator_data.MoneySpending(&struct_modal.DataRows{
+	//	ValueRange: resp,
+	//})
+	//
+	//if err != nil {
+	//	log.Fatalf("Error when calculator money spend in day: %v", err.Error())
+	//}
+	//
+	//configTele, message := noti.PrepareData(moneySpending)
+	//if configTele != nil {
+	//	err = noti.SendTelegramMessage(configTele, message)
+	//}
+	//if err != nil {
+	//	fmt.Printf("Error sending message: %v\n", err)
+	//	return
+	//}
+	//
+	//fmt.Println("Message sent successfully!", message)
+
 	ctx := context.Background()
-	// /root/project/my-money/credentials.json
-	b, err := os.ReadFile("./credentials.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+
+	// Đọc credentials từ biến môi trường
+	serviceAccountPath := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if serviceAccountPath == "" {
+		log.Fatal("GOOGLE_APPLICATION_CREDENTIALS environment variable not set")
 	}
 
-	// If modifying these scopes, delete your previously saved token.json.
-	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets.readonly")
+	// Khởi tạo sheets service với credentials
+	srv, err := sheets.NewService(ctx, option.WithCredentialsFile(serviceAccountPath))
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	client := getClient(config)
-
-	srv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
-	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v", err)
+		log.Fatalf("Unable to create sheets service: %v", err)
 	}
 
-	// Prints the names and majors of students in a sample spreadsheet:
-	// https://docs.google.com/spreadsheets/d/1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI/edit?gid=0#gid=0
+	// Phần code đọc spreadsheet giữ nguyên
 	spreadsheetId := "1rVQtA77ILhvj03bCANNu5mRP4vgJXKRyQUpuScUuppI"
 	readRange := "T01/2025!A3:Z40"
 	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
